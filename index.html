@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Documento sin título</title>
+ <link rel="stylesheet" href="css/chessboard-0.3.0.css" />
+ <link rel="stylesheet" href="css/main.css" />
+     <link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.min.css" />
+
+     <script src="js/json3.min.js"></script>
+     <script src="js/jquery-1.8.2.min.js"></script>
+     <script src="js/bootstrap.min.js"></script>
+     <script src="js/chess2.js"></script>
+     <script src="js/chessboard-0.3.0.js"></script>
+    
+</head>
+
+<body>
+
+<div id="board" style="width: 400px"></div>
+<p>Status: <span id="status"></span></p>
+<p>FEN: <span id="fen"></span></p>
+<p>PGN: <span id="pgn"></span></p>
+
+<div class="form-group">
+        <label for="color" class="control-label col-xs-4 col-sm-6 col-md-4">Promote to</label>
+</div>
+
+<!--////////////////////////////////////////////////////////////////////-->
+
+<div id="coronar" hidden="coronar" >
+
+  <div class="form-group">
+       <label for="color" class="control-label col-xs-4 col-sm-6 col-md-4">Corona</label>
+             <div class="col-xs-4 col-sm-6 col-md-4" >
+               <select onChange="promo()" id='promote' class="start"  >
+                 <option value=0 selected>Coronar</option>
+                 <option value=q>Reina</option>
+                 <option value=r>Torre</option>
+                 <option value=b>Alfil</option>
+                 <option value=n>Caballlo</option>
+                 
+               </select>
+             </div>
+ </div> <br />  
+ 
+ <div class="start" >
+      <button>Jugar</button>
+ </div><br /><br /><br /> 
+ <p id='td3'></p>
+ <br /> 
+</div>
+<!--//////////////////////////////////popup- ini///////////////////////////////////////-->
+
+<script>
+var board,
+  game = new Chess(),
+  statusEl = $('#status'),
+  fenEl = $('#fen'),
+  pgnEl = $('#pgn');
+  var a;
+ /////////////////////////////////////////////////////////////////////////////////////////////////// esta funcion es solo la popup que muesta el 
+ function kw3(){	                                                                              // formulario para selecionar la corona
+	 $("#coronar .start button").on('click', function(){ $("#coronar").hide(); game.turn(); });   //	 	 
+     $("#coronar").show();                                                                        //	  	
+  }                                                                                               //       
+///////////////////////////////////////////////////////////////////////////////////////////////////  
+ function mente(){	     //    esta funcion  solo guarda 
+	    a = game.history();
+		kw3();
+		game.undo();
+  }
+	 
+/////////////////////////////////////////////////////////////	Esta funcion tiene como proposito  
+  function promo (){	                                     //   convertir el ultimo movimiento algebraico 
+	       um = document.getElementById('promote').value;    //   y cambiarle el ultimo valor que es el de la funcion 
+		   bf = um.toUpperCase();                              // 	promotion al separala en partes	
+/////////////////////////////////////////////////////////////   gxh8=Q   gxh8=  mas promotion que es asignada
+	       nc = a.pop();                                     //   por formulario select promote 
+		   tr = nc.split('');                                  //   ese fornulario se saca el valor q, r, b, n
+		   jp = tr.pop();                                      //   este valor se combierte en mayuscula y se   
+		   md = tr.join('');                                   //   concatena a 'ct' que es la variable de la cual se estrajo 
+		   ct = md + bf;                                       //   ultimo movimiento y esto me da un valor algebraico esta valor	  
+	       game.move(ct);                                    //   se le asigna a game.move y se produce la corona con la piesa selecionada
+	       board.position(game.fen());                       //   Pero esto supome un problema como es un valor algebraico insertado  no es tomado
+		   $("#coronar").hide();                               //   por el juego y no asume si el rey esta en jake o no parese haber un problema
+	  }                                                      //   al inserta esto valores por eso si coronas con jake no funciona estoy 
+ ////////////////////////////////////////////////////////////   trabajando en otra solucion los valores algebraico se debe espesificar jaque con un sugno +
+                                                                // gxh8=Q+ este con jaque   gxh8=Q sin jaque  este es el problema 
+
+// do not pick up pieces if the game is over
+// only pick up pieces for the side to move
+var onDragStart = function(source, piece, position, orientation) {
+  if (game.game_over() === true ||
+      (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+    return false;
+  }
+};
+
+var onDrop = function(source, target) {
+  // see if the move is legal
+  var move = game.move({
+    from: source,
+    to: target,
+    promotion: 'q' // NOTE: always promote to a queen for example simplicity
+  });
+  // illegal move
+  if (move === null) return 'snapback';
+////////////////////////////////////////////////// todo inicia aqui se espera que de llame a la funcion move.promotion
+  if (move.promotion){	                        // esta activa lo funcion mente() la cual guarda la ultima y todas la jugadas 
+	    mente();                                  // y hace un undo o devuelve la ultima jugada llama ala funcion kw3()
+	  }                                           // que muestra la popup donde esta lo opcion para seleccionar la piesa que 
+  updateStatus();                               // se quieres coronar
+};////////////////////////////////////////////////
+///////////////////////////////////////////////////
+// update the board position after the piece snap 
+// for castling, en passant, pawn promotion
+var onSnapEnd = function() {
+  board.position(game.fen());
+};
+
+var updateStatus = function() {
+  var status = '';
+
+  var moveColor = 'White';
+  if (game.turn() === 'b') {
+    moveColor = 'Black';
+  }
+
+  // checkmate?
+  if (game.in_checkmate() === true) {
+    status = 'Game over, ' + moveColor + ' is in checkmate.';
+  }
+
+  // draw?
+  else if (game.in_draw() === true) {
+    status = 'Game over, drawn position';
+  }
+
+  // game still on
+  else {
+    status = moveColor + ' to move';
+
+    // check?
+    if (game.in_check() === true) {
+      status += ', ' + moveColor + ' is in check';
+    }
+  }
+
+  statusEl.html(status);
+  fenEl.html(game.fen());
+  pgnEl.html(game.pgn());
+};
+
+var cfg = {
+  draggable: true,
+  position: 'start',
+  onDragStart: onDragStart,
+  onDrop: onDrop,
+  onSnapEnd: onSnapEnd
+};
+board = ChessBoard('board', cfg);
+
+updateStatus();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Documento sin título</title>
+ <link rel="stylesheet" href="css/chessboard-0.3.0.css" />
+ <link rel="stylesheet" href="css/main.css" />
+     <link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.min.css" />
+
+     <script src="js/json3.min.js"></script>
+     <script src="js/jquery-1.8.2.min.js"></script>
+     <script src="js/bootstrap.min.js"></script>
+     <script src="js/chess2.js"></script>
+     <script src="js/chessboard-0.3.0.js"></script>
+     <script src="js/fichas.js"></script> 
+</head>
+
+<body>
+
+<div id="board" style="width: 450px"></div>
+<p>Status: <span id="status"></span></p>
+<p>FEN: <span id="fen"></span></p>
+<p>PGN: <span id="pgn"></span></p>
+<!--//////////////////////////////////////////////////////////////////////////////////-->
+
+<!--//////////////////////////////////popup- ini///////////////////////////////////////-->
+
+<div id="coronar" hidden="coronar" >
+
+  <div class="form-group">
+       <label for="color" class="control-label col-xs-4 col-sm-6 col-md-4">Corona</label>
+             <div class="col-xs-4 col-sm-6 col-md-4" >
+               <select   onChange="promo()"  class="image-picker show-labels show-html"  id="promote">
+                 <option value=q selected >Reina</option>
+                 <option value=r>Torre</option>
+                 <option value=b>Alfil</option>
+                 <option value=n>Caballo</option>
+              </select>
+             </div>
+             
+             <br /><table width="248" border="1">
+                          <tbody>                              
+                               <tr id="promo_blancas">    <!--las piesa blancas de la corona -->
+                                 <td width="56" height="53" onClick="reina()"><img src="img/chesspieces/wikipedia/wQ.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="torre()" ><img src="img/chesspieces/wikipedia/wR.png" width="50" height="50" alt=""/></td>
+                                 <td width="58" onClick="alfil()" ><img src="img/chesspieces/wikipedia/wB.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="caballo()" ><img src="img/chesspieces/wikipedia/wN.png" width="50" height="50" alt=""/></td>
+                               </tr>
+                             
+                              <tr id="promo_negras" ><!--las imagenes negras de la corona  -->
+                                <td width="56" height="53" onClick="reina()"><img src="img/chesspieces/wikipedia/bQ.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="torre()" ><img src="img/chesspieces/wikipedia/bR.png" width="50" height="50" alt=""/></td>
+                                 <td width="58" onClick="alfil()" ><img src="img/chesspieces/wikipedia/bB.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="caballo()" ><img src="img/chesspieces/wikipedia/bN.png" width="50" height="50" alt=""/></td>
+                             </tr>
+                                <tr>
+                                  <td>Reina</td>
+                                  <td>Torre</td>
+                                  <td>Alfil</td>
+                                  <td>Caballo</td>
+                                </tr>
+                         </tbody>
+                 </table><br /> 
+            </div> 
+</div>
+<br /> 
+ <p id="c1">A</p><br />
+ <p id="c2">B</p><br />
+ <p id="c3">C</p><br />
+<!--Se logra reducir el codigo al eliminar la convercion algebraica de las negras incustando una condicion en la convercion 
+de las blancas esto reduce el codigo lo que se trato de hace con este codigo es crear una popup o ventana donde se pudiera seleccionar
+la piesa que se quiere coronar si alterar las apis de chess.js y chessboard.js  a quines agradesco por su codigo se le pidio ayuda pero
+seguramente estaban ocupados de todas maneras gracias por las apis son exelentes nuy buen trabajo 
+trataare de mejorar este codigo. Hacerlo mas amigable para el usuario final  -->
+
+<script>
+///////////////////////////////////////////////////////////////////////////////////////////////////
+function reina() { 
+    document.getElementById("promote").value = 'q'; // carga la reina en el select "promote"
+	promo();
+	updateStatus();
+}
+function torre() { 
+    document.getElementById("promote").value = 'r';  // carga la torre en el select "promote"
+	promo();
+	updateStatus();
+}
+function alfil() { 
+    document.getElementById("promote").value = 'b'; // carga el alfil en el select "promote"
+	promo();
+	updateStatus();
+}
+function caballo() {
+    document.getElementById("promote").value = 'n';  // carga el caballo en el select "promote"
+	promo();
+	updateStatus();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function pwh() {
+   	     document.getElementById('promo_blancas').style.display = "none"; // muestra las piesas blamcas de la corona
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////	
+function pbh(){ 
+		 document.getElementById('promo_negras').style.display = "none";  // muestra las piesas negras de la corona
+		 //document.getElementById(id).style.display = "none";			
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+function pws() {
+   	     document.getElementById('promo_blancas').style.display = "";  //oculta la piesas blamcas de la corona
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+function pbs() {
+   	     document.getElementById('promo_negras').style.display = "";   //oculta la piesas negras de la corona 
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var board,
+  game = new Chess(),
+  statusEl = $('#status'),
+  fenEl = $('#fen'),
+  pgnEl = $('#pgn');
+  
+ function kw3(){   //solo muestra la popu  
+	 $("#coronar .start button").on('click', function(){ $("#coronar").hide();  });	 	 
+     $("#coronar").show();
+	 	  	
+  } 
+// do not pick up pieces if the game is over
+// only pick up pieces for the side to move
+var onDragStart = function(source, piece, position, orientation) {
+  if (game.game_over() === true ||
+      (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+    return false;
+  }
+};
+
+function mente(){ 
+	a = game.history()
+	game.undo();
+	kw3();		
+}
+	
+//////////////////////////////////////////////////////////////////////////////////////////////////	
+	function promo(){
+		nu = a.pop();
+		tp = nu.length;
+		if (tp === 7){
+			ab = nu.substring(2, nu.length -3); //= h8
+			cd = nu.substring(0, nu.length -6); //= g
+			ef = nu.substring(3, nu.length -3);// =8
+			
+			if(game.turn() === 'w'){res = ef - 1;}else{res = parseInt(ef) +parseInt(1); }                             
+			 
+			a_from = cd + res;
+			b_to = ab;
+			c_promotion = document.getElementById('promote').value;			 
+			}else{if (tp === 5){
+			ab = nu.substring(0, nu.length -3); //= g8
+			cd = nu.substring(0, nu.length -4); //= g
+			ef = nu.substring(1, nu.length -3);// =8
+						                                  
+			if(game.turn() === 'w'){res = ef - 1;}else{res = parseInt(ef) +parseInt(1); }
+			 
+			a_from = cd + res;
+			b_to = ab;
+			c_promotion = document.getElementById('promote').value;			 
+			}else{if (tp === 6){
+			ab = nu.substring(2, nu.length -2); //= h8
+			cd = nu.substring(0, nu.length -5); //= g
+			ef = nu.substring(3, nu.length -2);// =8
+						                                  
+			if(game.turn() === 'w'){res = ef - 1;}else{res = parseInt(ef) +parseInt(1); }
+			 
+			a_from = cd + res;
+			b_to = ab;
+			c_promotion = document.getElementById('promote').value;			 
+			}else{if (tp === 4){
+			ab = nu.substring(0, nu.length -2); //= f8
+			cd = nu.substring(0, nu.length -3); //= g
+			ef = nu.substring(1, nu.length -2);// =8
+						                                  
+			if(game.turn() === 'w'){res = ef - 1;}else{res = parseInt(ef) +parseInt(1); }
+			 
+			a_from = cd + res;
+			b_to = ab;
+			c_promotion = document.getElementById('promote').value;			 
+			}}}}				
+		    a = game.move({from:a_from, to:b_to, promotion:c_promotion} );		
+		    board.position(game.fen());			
+			$("#coronar").hide();
+		    pws(); 
+		    pbs();			
+			//c1.innerHTML = a;
+		    //c2.innerHTML = ng;
+	}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
+var onDrop = function(source, target) {
+  // see if the move is legal
+  var move = game.move({
+    from: source,
+    to: target,		
+    promotion:'q' // NOTE: always promote to a queen for example simplicity
+  });
+
+  // illegal move
+  if (move === null) return 'snapback';       
+         if (move.promotion){
+			 mente();
+		 if (game.turn() === 'w'){
+			  
+		     pbh();			      
+     }
+	     else{ pwh();	      
+	 }	 
+ }    
+  
+        updateStatus();
+};
+
+// update the board position after the piece snap 
+// for castling, en passant, pawn promotion
+var onSnapEnd = function() {
+  board.position(game.fen());
+};
+
+var updateStatus = function() {
+  var status = '';
+
+  var moveColor = 'White';
+  if (game.turn() === 'b') {
+    moveColor = 'Black';
+  }
+
+  // checkmate?
+  if (game.in_checkmate() === true) {
+    status = 'Game over, ' + moveColor + ' is in checkmate.';
+  }
+
+  // draw?
+  else if (game.in_draw() === true) {
+    status = 'Game over, drawn position';
+  }
+
+  // game still on
+  else {
+    status = moveColor + ' to move';
+
+    // check?
+    if (game.in_check() === true) {
+      status += ', ' + moveColor + ' is in check';
+    }
+  }
+
+  statusEl.html(status);
+  fenEl.html(game.fen());
+  pgnEl.html(game.pgn());
+};
+
+var cfg = {
+  draggable: true,
+  position: 'start',
+  onDragStart: onDragStart,
+  onDrop: onDrop,
+  onSnapEnd: onSnapEnd
+};
+board = ChessBoard('board', cfg);
+
+updateStatus();
+
+</script>
+
+
+</body>
+</html>

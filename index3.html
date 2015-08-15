@@ -1,0 +1,285 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Documento sin título</title>
+ <link rel="stylesheet" href="css/chessboard-0.3.0.css" />
+ <link rel="stylesheet" href="css/main.css" />
+     <link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.min.css" />
+
+     <script src="js/json3.min.js"></script>
+     <script src="js/jquery-1.8.2.min.js"></script>
+     <script src="js/bootstrap.min.js"></script>
+     <script src="js/chess2.js"></script>
+     <script src="js/chessboard-0.3.0.js"></script>
+     <script src="js/fichas.js"></script> 
+</head>
+
+<body>
+
+<div id="board" style="width: 450px"></div>
+<p>Status: <span id="status"></span></p>
+<p>FEN: <span id="fen"></span></p>
+<p>PGN: <span id="pgn"></span></p>
+<!--//////////////////////////////////////////////////////////////////////////////////-->
+
+<!--//////////////////////////////////popup- ini///////////////////////////////////////-->
+
+<div id="coronar" hidden="coronar" >
+
+  <div class="form-group">
+       <label for="color" class="control-label col-xs-4 col-sm-6 col-md-4">Corona</label>
+             <div class="col-xs-4 col-sm-6 col-md-4" >
+               <select   onChange="promo()"  class="image-picker show-labels show-html"  id="promote">
+                 <option value=q selected >Reina</option>
+                 <option value=r>Torre</option>
+                 <option value=b>Alfil</option>
+                 <option value=n>Caballo</option>
+              </select>
+             </div>
+             
+             <br /><table width="248" border="1">
+                          <tbody>                              
+                               <tr id="promo_blancas">    <!--las piesa blancas de la corona -->
+                                 <td width="56" height="53" onClick="reina()"><img src="img/chesspieces/wikipedia/wQ.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="torre()" ><img src="img/chesspieces/wikipedia/wR.png" width="50" height="50" alt=""/></td>
+                                 <td width="58" onClick="alfil()" ><img src="img/chesspieces/wikipedia/wB.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="caballo()" ><img src="img/chesspieces/wikipedia/wN.png" width="50" height="50" alt=""/></td>
+                               </tr>
+                             
+                              <tr id="promo_negras" ><!--las imagenes negras de la corona  -->
+                                <td width="56" height="53" onClick="reina()"><img src="img/chesspieces/wikipedia/bQ.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="torre()" ><img src="img/chesspieces/wikipedia/bR.png" width="50" height="50" alt=""/></td>
+                                 <td width="58" onClick="alfil()" ><img src="img/chesspieces/wikipedia/bB.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="caballo()" ><img src="img/chesspieces/wikipedia/bN.png" width="50" height="50" alt=""/></td>
+                             </tr>
+                                <tr>
+                                  <td>Reina</td>
+                                  <td>Torre</td>
+                                  <td>Alfil</td>
+                                  <td>Caballo</td>
+                                </tr>
+                         </tbody>
+                 </table><br /> 
+            </div> 
+</div>
+<br /> 
+ <p id="c1">A</p> <br />
+ <p id="c2">B</p> <br />
+ <p id="c3">C</p> <br />
+ <!-- se ha logrado mejoras la corona sobre el problema que tenia todo depende de el velor que tenga la fucion por defecto 
+ promotion:'q' si al coronar tiene el valor de la reina se puede coronar torre o renia, Este o no en jaque pero caballo y alfil 
+ solo se puede coronar si al coronar no queda en jaque el rey 
+ pero si valor  promotion'n' o 'b' ahi si podria coronar caballo o alfil  si el rey quedara en jaque al hacer la corona 
+ todavia falsa seguire trabajando en algo mejor
+ -->
+<script>
+///////////////////////////////////////////////////////////////////////////////////////////////////
+function reina() { 
+    document.getElementById("promote").value = 'q'; // carga la reina en el select "promote"
+	promo();
+	updateStatus();
+}
+function torre() { 
+    document.getElementById("promote").value = 'r';  // carga la torre en el select "promote"
+	promo();
+	updateStatus();
+}
+function alfil() { 
+    document.getElementById("promote").value = 'b'; // carga el alfil en el select "promote"
+	promo();
+	updateStatus();
+}
+function caballo() {
+    document.getElementById("promote").value = 'n';  // carga el caballo en el select "promote"
+	promo();
+	updateStatus();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function pwh() {
+   	     document.getElementById('promo_blancas').style.display = "none"; // muestra las piesas blamcas de la corona
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////	
+function pbh(){ 
+		 document.getElementById('promo_negras').style.display = "none";  // muestra las piesas negras de la corona
+		 //document.getElementById(id).style.display = "none";			
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+function pws() {
+   	     document.getElementById('promo_blancas').style.display = "";  //oculta la piesas blamcas de la corona
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+function pbs() {
+   	     document.getElementById('promo_negras').style.display = "";   //oculta la piesas negras de la corona 
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var board,
+  game = new Chess(),
+  statusEl = $('#status'),
+  fenEl = $('#fen'),
+  pgnEl = $('#pgn');
+  var a;
+  
+  
+ function kw3(){   //solo muestra la popu  
+	 $("#coronar .start button").on('click', function(){ $("#coronar").hide();  });	 	 
+     $("#coronar").show();	 	  	
+  }    
+  
+ function mente(){	          // esta funcio es la encargada de guardar el la  hitorial de movimientos 
+	    a = game.history(); 
+		kw3();                //tanbien se llama la popu y se devuel la ultima jugada de coronar 
+		game.undo();         
+  }  
+  /* function promo (){	  
+	       um = document.getElementById('promote').value; 
+		   bf = um.toUpperCase();		
+	  
+	       nc = a.pop();
+		   tr = nc.split('');
+		   jp = tr.pop();
+		   md = tr.join('');
+		   ct = md + bf;	  
+	       game.move(ct);
+	       board.position(game.fen());
+		   $("#coronar").hide();
+		   pws();
+		   pbs();
+	  } */
+  	  	  
+function promo(){	  // aqui  en esta funcion se captura la piese que se quiere coronar q, r, n, b
+	       um = document.getElementById('promote').value; 
+		   bf = um.toUpperCase();	// esta se cambia a mayuscula pa piesa que se quiere coronar	
+	  
+	       nc = a.pop();  // aqui se catura el ultimo movimiento 
+		   nu = nc.length; // se cuentan la letras del ultimo movimiento so corona co jake 7 y si jake 6 
+			 if (nu === 7){  // por que ala funcion jake le agrgasn un '+'			    
+			     tr = nc.substring(0, nc.length-3);
+				 ct = tr + '=' + bf + '+';								
+			alert(ct + ' -a')
+             }
+			 if (nu === 6){      			    
+			     tr = nc.substring(0, nc.length-2);			 
+				 ct = tr + bf ;
+				alert(ct + ' -b')  		
+             } 
+			 if (nu === 5){   // por que ala funcion jake le agrgasn un '+'			    
+			     tr = nc.substring(0, nc.length-2);			 
+				 ct =   tr + bf + '+' ; 
+				 alert(ct + ' -c')		
+             }   
+			 if (nu === 4){   // por que ala funcion jake le agrgasn un '+'			    
+			     tr = nc.substring(0, nc.length-1);			 
+				 ct =   tr + bf  ; 
+				 alert(ct + ' -d')		
+             } 
+//alert(nu)
+
+		   game.move(ct); // aqui  ejecuto el movimiento es decir aqui le digo que piesa coronar
+	       board.position(game.fen()); // esto opcio es muy importante si no la agregas no se mueve pa piesa 
+		   $("#coronar").hide();// esta hace que al terminar la seleccion de la piesa la popu se oculte  
+		   pws(); // esta funcio hace vible las piesas blancas de la popup  solo muestra una por que la optra la oculta pwh 
+		   pbs();   //esta funcio hace vible las piesas negras  de la popu 
+		   c1.innerHTML = nc + ' el ultimo valor de promotion';
+		   c2.innerHTML = ct + ' el valor que se cambio';
+		   //c3.innerHTML = nc;						
+ } 	       
+
+// do not pick up pieces if the game is over
+// only pick up pieces for the side to move
+var onDragStart = function(source, piece, position, orientation) {
+  if (game.game_over() === true ||
+      (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+    return false;
+  }
+};
+
+
+
+var onDrop = function(source, target) {
+  // see if the move is legal
+  var move = game.move({
+    from: source,
+    to: target,
+    promotion: 'q'   // NOTE: always promote to a queen for example simplicity
+  }); 
+  
+  
+  if (move === null)  return 'snapback';
+  
+  if (move.promotion){       // para crear la popup que selecciona la corona todo inicia aqui  hay una funcion que corona se llama move.promotion                            
+	    mente();			// si pone inicia condicion si move.promotio se activa se ejecuta una funcion llamada mente()	
+		if (game.turn() === 'w'){ //aqui se le dide que si juegan las blanca al coronar que oculte las negras 
+		    pbh();			      //o  oculta las blancas
+     }
+	else{ pwh();	      
+	 }	 
+ }  
+  updateStatus();      
+}
+
+
+// update the board position after the piece snap 
+// for castling, en passant, pawn promotion
+var onSnapEnd = function() {
+  board.position(game.fen());
+};
+
+var updateStatus = function() {
+  var status = '';
+
+  var moveColor = 'White';
+  if (game.turn() === 'b') {
+    moveColor = 'Black';
+  }
+
+  // checkmate?
+  if (game.in_checkmate() === true) {
+    status = 'Game over, ' + moveColor + ' is in checkmate.';
+  }
+   
+  // draw?
+  else if (game.in_draw() === true) {
+    status = 'Game over, drawn position';
+  }
+
+  // game still on
+  else {
+    status = moveColor + ' to move';
+
+    // check?
+    if (game.in_check() === true) {
+      status += ', ' + moveColor + ' is in check';
+    }
+  }
+
+  statusEl.html(status);
+  fenEl.html(game.fen());
+  pgnEl.html(game.pgn()); 
+  
+}; 
+
+var cfg = {
+  draggable: true,
+  position: 'start',
+  onDragStart: onDragStart,
+  onDrop: onDrop,
+  onSnapEnd: onSnapEnd
+};
+board = ChessBoard('board', cfg);
+
+
+updateStatus();
+
+
+
+</script>
+
+
+
+</body>
+</html>
+>

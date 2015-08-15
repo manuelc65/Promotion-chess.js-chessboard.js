@@ -1,0 +1,263 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Documento sin título</title>
+ <link rel="stylesheet" href="css/chessboard-0.3.0.css" />
+ <link rel="stylesheet" href="css/main.css" />
+     <link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.min.css" />
+
+     <script src="js/json3.min.js"></script>
+     <script src="js/jquery-1.8.2.min.js"></script>
+     <script src="js/bootstrap.min.js"></script>
+     <script src="js/chess2.js"></script>
+     <script src="js/chessboard-0.3.0.js"></script>
+     <script src="js/fichas.js"></script> 
+</head>
+
+<body>
+
+<div id="board" style="width: 400px"></div>
+<p>Status: <span id="status"></span></p>
+<p>FEN: <span id="fen"></span></p>
+<p>PGN: <span id="pgn"></span></p>
+<p>&nbsp;</p>
+
+<!--//////////////////////////////////////////////////////////////////////////////////-->
+
+<!--//////////////////////////////////popup- ini///////////////////////////////////////-->
+
+
+
+
+<div id="coronar" hidden="coronar" >
+
+  <div class="form-group">
+       <label for="color" class="control-label col-xs-4 col-sm-6 col-md-4">Corona</label>
+             <div class="col-xs-4 col-sm-6 col-md-4" >
+               <select   onChange="promo()"  class="image-picker show-labels show-html"  id="promote">
+                 <option value=q selected >Reina</option>
+                 <option value=r>Torre</option>
+                 <option value=n>Caballo</option>
+                 <option value=b>Alfil</option>
+              </select>
+             </div>
+             
+             <br /><table width="248" border="1">
+                          <tbody>                              
+                               <tr id="promo_blancas">
+                                 <td width="56" height="53" onClick="reina()"><img src="img/chesspieces/wikipedia/wQ.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="torre()" ><img src="img/chesspieces/wikipedia/wR.png" width="50" height="50" alt=""/></td>
+                                 <td width="58" onClick="alfil()" ><img src="img/chesspieces/wikipedia/wB.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="caballo()" ><img src="img/chesspieces/wikipedia/wN.png" width="50" height="50" alt=""/></td>
+                               </tr>
+                             
+                              <tr id="promo_negras" >
+                                <td width="56" height="53" onClick="reina()"><img src="img/chesspieces/wikipedia/bQ.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="torre()" ><img src="img/chesspieces/wikipedia/bR.png" width="50" height="50" alt=""/></td>
+                                 <td width="58" onClick="alfil()" ><img src="img/chesspieces/wikipedia/bB.png" width="50" height="50" alt=""/></td>
+                                 <td width="53" onClick="caballo()" ><img src="img/chesspieces/wikipedia/bN.png" width="50" height="50" alt=""/></td>
+                             </tr>
+                                <tr>
+                                  <td>Reina</td>
+                                  <td>Torre</td>
+                                  <td>Alfil</td>
+                                  <td>Caballo</td>
+                                </tr>
+                         </tbody>
+                 </table><br /> 
+  </div> 
+</div>
+<!--! // Es un cambio no funcional solo se mejora el diseño de la 
+      // popup logrado una mejor vista con las piesa al coronar
+      // todavia sigo teniendo el problema al coronar las piesas con jaque
+      // reguarda que la popu se puede mover al lugar deseaso solo que para 
+      // efectos de desarrollo yo la trabajo ahi 
+ //-->
+<script>
+var pro_color;
+///////////////////////////////////////////////////////////////////////////////////////////////////
+function reina() { 
+    document.getElementById("promote").value = 'q';
+	promo();
+	updateStatus();
+}
+function torre() { 
+    document.getElementById("promote").value = 'r';
+	promo();
+	updateStatus();
+}
+function alfil() { 
+    document.getElementById("promote").value = 'b';
+	promo();
+	updateStatus();
+}
+function caballo() {
+    document.getElementById("promote").value = 'n';
+	promo();
+	updateStatus();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function pwh() {
+   	     document.getElementById('promo_blancas').style.display = "none";
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////	
+function pbh(){ 
+		 document.getElementById('promo_negras').style.display = "none";
+		 //document.getElementById(id).style.display = "none";			
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+function pws() {
+   	     document.getElementById('promo_blancas').style.display = "";
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+function pbs() {
+   	     document.getElementById('promo_negras').style.display = "";
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var a;
+var b;
+
+var board,
+  game = new Chess(),
+  statusEl = $('#status'),
+  fenEl = $('#fen'),
+  pgnEl = $('#pgn');
+  var a;
+  
+  
+ function kw3(){	  
+	 $("#coronar .start button").on('click', function(){ $("#coronar").hide(); game.turn(); });	 	 
+     $("#coronar").show();
+	 	  	
+  }    
+  
+ function mente(){	 
+	    a = game.history();
+		kw3();
+		game.undo();
+		//chess.fen();
+  }
+	 
+	 
+  function promo (){	  
+	       um = document.getElementById('promote').value;     
+		   bf = um.toUpperCase();		
+	  
+	       nc = a.pop();
+		   tr = nc.split('');
+		   jp = tr.pop();
+		   md = tr.join('');
+		   ct = md + bf;	  
+	       game.move(ct);
+	       board.position(game.fen());
+		   $("#coronar").hide();
+		   pws();
+		   pbs();
+	  } 
+  
+     
+
+// do not pick up pieces if the game is over
+// only pick up pieces for the side to move
+var onDragStart = function(source, piece, position, orientation) {
+  if (game.game_over() === true ||
+      (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+    return false;
+  }
+};
+
+
+
+var onDrop = function(source, target) {
+  // see if the move is legal
+  var move = game.move({
+    from: source,
+    to: target,
+    promotion: 'q'  // NOTE: always promote to a queen for example simplicity
+  }); 
+  
+  
+  if (move.promotion){        
+	    mente();				
+		if (game.turn() === 'w'){
+		    pbh();			
+     }
+	else{ pwh(); 
+	      
+	 }
+		
+  }
+
+  // illegal move
+  if (move === null) return 'snapback';
+  updateStatus();
+}
+
+
+
+
+
+
+// update the board position after the piece snap 
+// for castling, en passant, pawn promotion
+var onSnapEnd = function() {
+  board.position(game.fen());
+};
+
+var updateStatus = function() {
+  var status = '';
+
+  var moveColor = 'White';
+  if (game.turn() === 'b') {
+    moveColor = 'Black';
+  }
+
+  // checkmate?
+  if (game.in_checkmate() === true) {
+    status = 'Game over, ' + moveColor + ' is in checkmate.';
+  }
+   
+  // draw?
+  else if (game.in_draw() === true) {
+    status = 'Game over, drawn position';
+  }
+
+  // game still on
+  else {
+    status = moveColor + ' to move';
+
+    // check?
+    if (game.in_check() === true) {
+      status += ', ' + moveColor + ' is in check';
+    }
+  }
+
+  statusEl.html(status);
+  fenEl.html(game.fen());
+  pgnEl.html(game.pgn()); 
+  
+}; 
+
+
+
+var cfg = {
+  draggable: true,
+  position: 'start',
+  onDragStart: onDragStart,
+  onDrop: onDrop,
+  onSnapEnd: onSnapEnd
+};
+board = ChessBoard('board', cfg);
+
+
+updateStatus();
+
+
+
+   </script>
+</body>
+</html>
