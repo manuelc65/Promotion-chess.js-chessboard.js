@@ -1,6 +1,7 @@
-https://github.com/manuelc65/Promotion-chess.js-chessboard.js/blob/master/promo1.png
+
+![alt tag](https://github.com/manuelc65/Promotion-chess.js-chessboard.js/blob/master/promo1.png)
 **********************************************************************************************************************************
-https://github.com/manuelc65/Promotion-chess.js-chessboard.js/blob/master/promo2.png
+![alt tag](https://github.com/manuelc65/Promotion-chess.js-chessboard.js/blob/master/promo2.png)
 
 
 # Promotion-chess.js-chessboard.js
