@@ -1,3 +1,8 @@
+https://github.com/manuelc65/Promotion-chess.js-chessboard.js/blob/master/promo1.png
+**********************************************************************************************************************************
+https://github.com/manuelc65/Promotion-chess.js-chessboard.js/blob/master/promo2.png
+
+
 # Promotion-chess.js-chessboard.js
 Se crea una mini popup en el tablero de ajedrez con las opciones necesarias para coronar en tiempo real Reina Torre Alfil o Caballo
 
